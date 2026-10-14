@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Watsky</title>
+<meta name="theme-color" content="#2F7DF6">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Watsky">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --night:#0F1B33; --sky:#2F7DF6; --sky-soft:#E6F0FE; --sun:#FFB020;
+  --bg:#EDF2FA; --panel:#FFFFFF; --text:#12223F; --muted:#6B7A93; --line:#DCE5F2;
+  --bubble-in:#FFFFFF; --bubble-out:#2F7DF6; --bubble-out-text:#FFFFFF; --read:#FFD27A; --dots:rgba(47,125,246,.06);
+  --accent:#2F7DF6;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0B1424; --panel:#13203A; --text:#E8EEF9; --muted:#8FA0BD; --line:#22314F;
+    --bubble-in:#1B2A48; --sky-soft:#1A2B4C; --dots:rgba(255,255,255,.035);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0B1424; --panel:#13203A; --text:#E8EEF9; --muted:#8FA0BD; --line:#22314F;
+  --bubble-in:#1B2A48; --sky-soft:#1A2B4C; --dots:rgba(255,255,255,.035);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body,#root{height:100%}
+html{-webkit-text-size-adjust:100%}
+body{-webkit-tap-highlight-color:transparent;font-family:'IBM Plex Sans Arabic',Tahoma,Arial,sans-serif;background:var(--bg);color:var(--text);overflow:hidden}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input{font-family:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--sky);outline-offset:2px}
+
+/* Avatars */
+.av{position:relative;flex:none;border-radius:50%}
+.av-in{width:100%;height:100%;border-radius:50%;overflow:hidden;display:grid;place-items:center}
+.av-in svg,.av-in img{width:100%;height:100%;display:block;object-fit:cover}
+.av .dot{position:absolute;bottom:1px;inset-inline-start:1px;width:12px;height:12px;border-radius:50%;background:#2BC46B;border:2.5px solid var(--panel)}
+.av-group{background:linear-gradient(135deg,var(--sky),var(--sun));color:#fff}
+
+/* Custom emoji */
+.ce{display:inline-block;width:1.45em;height:1.45em;vertical-align:-.35em}
+.ce svg{width:100%;height:100%;display:block}
+.txt.jumbo .ce{width:52px;height:52px;margin:2px}
+
+/* Login */
+.login{height:100%;display:flex;align-items:center;justify-content:center;padding:20px;background:var(--night);position:relative;overflow:hidden}
+.login::before{content:"";position:absolute;width:560px;height:560px;border-radius:50%;background:var(--sky);opacity:.2;top:-200px;left:-180px}
+.login::after{content:"";position:absolute;width:320px;height:320px;border-radius:50%;background:var(--sun);opacity:.14;bottom:-110px;right:-90px}
+.login-card{position:relative;z-index:1;width:100%;max-width:400px;background:var(--panel);border-radius:30px;padding:34px 26px;text-align:center}
+.logo{width:72px;height:72px;margin:0 auto 12px;border-radius:23px;background:var(--sky);display:grid;place-items:center}
+.login-card h1{font-size:34px;font-weight:700;letter-spacing:-.5px}
+.login-card p{color:var(--muted);margin:8px 0 18px;line-height:1.8;font-size:15px}
+.cast{display:flex;justify-content:center;margin-bottom:20px;direction:ltr}
+.cast .av{width:46px;height:46px;margin-inline:-6px;border:3px solid var(--panel)}
+.field{width:100%;padding:14px 16px;border-radius:14px;border:1.5px solid var(--line);background:var(--bg);font-size:16px;margin-bottom:12px;text-align:right}
+.btn{width:100%;padding:14px;border-radius:14px;background:var(--sky);color:#fff;font-weight:700;font-size:16px}
+.btn:hover{filter:brightness(1.07)}
+.btn.ghost{background:var(--bg);color:var(--text)}
+
+/* App */
+.app{height:100%;overflow:hidden;grid-template-rows:minmax(0,1fr);display:grid;grid-template-columns:380px 1fr;max-width:1500px;margin:0 auto;background:var(--panel)}
+.side{border-inline-end:1px solid var(--line);display:flex;flex-direction:column;min-height:0;background:var(--panel)}
+.side-head{display:flex;align-items:center;gap:6px;padding:16px 16px 8px}
+.side-head h2{flex:1;font-size:26px;font-weight:700;letter-spacing:-.4px}
+.icon-btn{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;color:var(--muted);font-size:18px;flex:none}
+.icon-btn:hover{background:var(--sky-soft);color:var(--sky)}
+.search{margin:6px 16px 10px;padding:12px 16px;border-radius:16px;border:none;background:var(--bg);font-size:16px;width:calc(100% - 32px)}
+.list{flex:1 1 0;min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;padding-bottom:8px}
+.chat-item{display:flex;gap:13px;align-items:center;padding:11px 16px;width:100%;text-align:right;position:relative}
+.chat-item:hover{background:var(--bg)}
+.chat-item.active{background:var(--sky-soft)}
+.chat-item.active::before{content:"";position:absolute;inset-block:10px;inset-inline-start:0;width:4px;border-radius:0 4px 4px 0;background:var(--c,var(--sky))}
+.ci-body{flex:1;min-width:0}
+.ci-top{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.ci-name{font-weight:700;font-size:16.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ci-time{font-size:12px;color:var(--muted);flex:none}
+.ci-bottom{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:3px}
+.ci-last{color:var(--muted);font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ci-last.live{color:var(--sky);font-weight:500}
+.badge{flex:none;min-width:21px;height:21px;padding:0 6px;border-radius:11px;background:var(--sun);color:#3a2800;font-size:12px;font-weight:700;display:grid;place-items:center}
+.side-foot{border-top:1px solid var(--line);padding:12px 16px;display:flex;align-items:center;gap:12px;font-size:14px}
+.side-foot .grow{flex:1;line-height:1.5}
+.side-foot small{display:block;color:var(--muted);font-size:12px}
+.switch{position:relative;width:46px;height:26px;border-radius:13px;background:var(--line);flex:none;transition:background .2s}
+.switch::after{content:"";position:absolute;top:3px;inset-inline-start:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform .2s}
+.switch.on{background:var(--sky)}
+.switch.on::after{transform:translateX(-20px)}
+
+/* Chat */
+.chat{display:flex;flex-direction:column;min-height:0;height:100%;overflow:hidden;background:var(--bg);position:relative}
+.empty{margin:auto;text-align:center;color:var(--muted);padding:30px;max-width:420px}
+.empty .logo{margin-bottom:18px;width:84px;height:84px;border-radius:26px}
+.empty h3{color:var(--text);font-size:24px;margin-bottom:8px}
+.empty p{line-height:1.8}
+.chat-head{display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--panel);border-bottom:1px solid var(--line);position:relative;flex:none}
+.chat-head::after{content:"";position:absolute;inset-inline:0;bottom:-1px;height:3px;background:var(--accent)}
+.back{display:none}
+.ch-name{font-weight:700;font-size:17.5px}
+.ch-sub{font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ch-sub.live{color:var(--accent);font-weight:500}
+.menu{position:absolute;top:60px;inset-inline-end:10px;background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:0 10px 30px rgba(10,20,40,.2);padding:6px;display:none;z-index:8;min-width:190px}
+.menu.show{display:block}
+.menu button{display:block;width:100%;text-align:right;padding:11px 12px;border-radius:9px;font-size:15px}
+.menu button:hover{background:var(--bg)}
+.msgs{flex:1 1 0;min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;padding:18px 6% 10px;display:flex;flex-direction:column;gap:5px;
+  background-image:radial-gradient(var(--dots) 1.4px,transparent 1.4px);background-size:22px 22px}
+.day{align-self:center;background:var(--panel);color:var(--muted);font-size:12px;padding:4px 14px;border-radius:12px;margin:10px 0}
+.msg{max-width:min(540px,78%);padding:9px 13px 6px;border-radius:18px;line-height:1.7;font-size:15.5px;overflow-wrap:anywhere;box-shadow:0 1px 1px rgba(10,20,40,.06)}
+.msg.in{align-self:flex-end;background:var(--bubble-in);border-end-end-radius:5px}
+.msg.out{align-self:flex-start;background:var(--bubble-out);color:var(--bubble-out-text);border-end-start-radius:5px}
+.msg.bare{background:transparent;box-shadow:none;padding:2px 4px;color:var(--text)}
+.msg.bare .meta{color:var(--muted)}
+.msg.gifm{padding:4px 4px 6px}
+.msg img.gif{display:block;max-width:100%;max-height:260px;border-radius:14px}
+.msg .who{font-size:13px;font-weight:700;margin-bottom:1px}
+.txt{white-space:pre-wrap}
+.meta{display:flex;gap:5px;align-items:center;justify-content:flex-end;font-size:11px;opacity:.7;margin-top:1px;padding-inline:6px}
+.msg.out .meta{opacity:.9}
+.msg.bare .meta{opacity:1}
+.tick{display:inline-flex}
+.tick.read{color:var(--read)}
+.msg.bare .tick.read{color:var(--sun)}
+.typing{align-self:flex-end;background:var(--bubble-in);padding:12px 16px;border-radius:18px;display:flex;gap:4px;align-items:center}
+.typing i{width:7px;height:7px;border-radius:50%;background:var(--muted);animation:b 1s infinite}
+.typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
+.typing span{font-size:12px;color:var(--muted);margin-inline-start:6px}
+@keyframes b{0%,60%,100%{transform:translateY(0);opacity:.5}30%{transform:translateY(-5px);opacity:1}}
+
+/* Stickers (animated) */
+.stk{display:flex;flex-direction:column;align-items:center;gap:2px;padding:2px 6px}
+.stk svg{width:104px;height:104px;display:block}
+.stk b{font-size:15px}
+.an-pulse,.an-shake,.an-bounce,.an-spin,.an-spinslow,.an-flicker,.an-sway{display:inline-block;transform-origin:center}
+.an-pulse{animation:k-pulse 1s ease-in-out infinite}
+.an-shake{animation:k-shake .7s ease-in-out infinite}
+.an-bounce{animation:k-bounce .9s ease-in-out infinite}
+.an-spin{animation:k-spin 1.2s linear infinite}
+.an-spinslow{animation:k-spin 6s linear infinite}
+.an-flicker{animation:k-flicker .6s ease-in-out infinite}
+.an-sway{animation:k-sway 1.6s ease-in-out infinite}
+@keyframes k-pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}
+@keyframes k-shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px) rotate(-4deg)}40%{transform:translateX(6px) rotate(4deg)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+@keyframes k-bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+@keyframes k-spin{to{transform:rotate(360deg)}}
+@keyframes k-flicker{0%,100%{transform:scale(1) rotate(-2deg)}50%{transform:scale(1.08,1.18) rotate(2deg)}}
+@keyframes k-sway{0%,100%{transform:rotate(-8deg)}50%{transform:rotate(8deg)}}
+
+/* Voice */
+.voice{display:flex;align-items:center;gap:10px;min-width:220px}
+.vplay{width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.25);display:grid;place-items:center;font-size:13px;flex:none}
+.msg.in .vplay{background:var(--accent);color:#fff}
+.wave{display:flex;align-items:center;gap:2px;height:30px;flex:1;color:#fff}
+.msg.in .wave{color:var(--accent)}
+.wave i{display:block;width:3px;border-radius:2px;background:currentColor;opacity:.35}
+.wave i.on{opacity:1}
+.vdur{font-size:12px;opacity:.9;min-width:34px;text-align:end}
+
+/* Composer */
+.chips{display:flex;gap:8px;padding:6px 14px 0;overflow-x:auto;flex:none}
+.chips button{flex:none;padding:8px 14px;border-radius:18px;background:var(--panel);border:1px solid var(--line);font-size:14px}
+.chips button:hover{border-color:var(--accent);color:var(--accent)}
+.composer{display:flex;gap:8px;align-items:center;padding:10px 12px;flex:none}
+.composer .box{flex:1;display:flex;align-items:center;background:var(--panel);border-radius:26px;padding:0 6px;border:1px solid var(--line);min-width:0}
+.composer input[type=text]{flex:1;padding:13px 6px;border:none;background:transparent;font-size:16px;min-width:0;outline:none}
+.send{width:48px;height:48px;border-radius:50%;background:var(--accent);color:#fff;display:grid;place-items:center;flex:none}
+.send:hover{filter:brightness(1.08)}
+.send svg{transform:scaleX(-1)}
+.recbar{display:none;flex:1;align-items:center;gap:10px;background:var(--panel);border:1px solid var(--line);border-radius:26px;padding:0 8px;height:50px;min-width:0}
+.composer.rec .box{display:none}
+.composer.rec .recbar{display:flex}
+.recdot{width:11px;height:11px;border-radius:50%;background:#E53935;animation:k-pulse 1s infinite;flex:none}
+.rectxt{flex:1;font-size:15px;color:var(--muted)}
+#recTime{font-weight:700;color:var(--text);min-width:40px}
+
+/* Panel */
+.panel{position:absolute;bottom:70px;inset-inline-start:12px;width:370px;max-width:calc(100% - 24px);height:350px;background:var(--panel);border:1px solid var(--line);border-radius:18px;box-shadow:0 10px 36px rgba(10,20,40,.25);display:none;flex-direction:column;z-index:6;overflow:hidden}
+.panel.show{display:flex}
+.ptabs{display:flex;border-bottom:1px solid var(--line);flex:none}
+.ptabs button{flex:1;padding:11px 4px;font-size:13.5px;color:var(--muted)}
+.ptabs button.on{color:var(--accent);box-shadow:inset 0 -3px 0 var(--accent);font-weight:700}
+.psearch{margin:8px;padding:9px 14px;border-radius:12px;border:none;background:var(--bg);font-size:16px;width:calc(100% - 16px);flex:none}
+.pgrid{flex:1;min-height:0;overflow-y:auto;padding:8px;display:grid;grid-template-columns:repeat(auto-fill,minmax(52px,1fr));gap:6px;align-content:start;scrollbar-width:thin}
+.pgrid > button{aspect-ratio:1;border-radius:12px;display:grid;place-items:center;padding:6px;font-size:24px}
+.pgrid > button:hover{background:var(--sky-soft)}
+.pgrid .ce{width:100%;height:100%}
+.pgrid.sgrid{grid-template-columns:repeat(auto-fill,minmax(100px,1fr))}
+.pgrid.sgrid > button{aspect-ratio:auto;gap:2px;font-size:13px}
+.pgrid.sgrid svg{width:64px;height:64px}
+.pgrid.ggrid{grid-template-columns:repeat(3,1fr)}
+.addgif{grid-column:1/-1;aspect-ratio:auto!important;padding:12px!important;background:var(--sky-soft);color:var(--accent);font-size:14px!important;font-weight:700}
+.gcell{position:relative;aspect-ratio:1}
+.gcell > button:first-child{width:100%;height:100%;border-radius:12px;overflow:hidden;padding:0}
+.gcell img{width:100%;height:100%;object-fit:cover;display:block}
+.gdel{position:absolute;top:3px;inset-inline-end:3px;width:22px;height:22px;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;font-size:14px;line-height:1}
+.pnote{grid-column:1/-1;color:var(--muted);text-align:center;padding:18px 10px;font-size:14px;line-height:1.8}
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--night);color:#fff;padding:12px 18px;border-radius:14px;font-size:14px;z-index:30;display:none;max-width:90%;text-align:center;line-height:1.6}
+.toast.show{display:block}
+
+/* Modal */
+.modal{position:fixed;inset:0;background:rgba(10,18,35,.55);display:none;align-items:center;justify-content:center;padding:20px;z-index:20}
+.modal.show{display:flex}
+.sheet{background:var(--panel);border-radius:22px;padding:22px;width:100%;max-width:400px;max-height:85vh;overflow-y:auto}
+.sheet h3{margin-bottom:14px;font-size:19px}
+.opt{display:flex;align-items:center;gap:12px;padding:8px 6px;border-radius:12px;width:100%;text-align:right;cursor:pointer}
+.opt:hover{background:var(--bg)}
+.opt input{width:18px;height:18px;accent-color:var(--sky)}
+.row{display:flex;gap:8px;margin-top:14px}
+
+@media (max-width:780px){
+  .app{grid-template-columns:1fr}
+  .chat{display:none}
+  .app.open .side{display:none}
+  .app.open .chat{display:flex}
+  .back{display:grid}
+  .msg{max-width:86%}
+  .msgs{padding-inline:12px}
+}
+@media (prefers-reduced-motion:reduce){
+  .typing i,.recdot,.an-pulse,.an-shake,.an-bounce,.an-spin,.an-spinslow,.an-flicker,.an-sway{animation:none}
+  .switch,.switch::after{transition:none}
+}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<div class="toast" id="toast" role="status"></div>
+<input type="file" id="picFile" accept="image/*" hidden>
+<input type="file" id="gifFile" accept="image/gif,image/webp,image/apng" hidden>
+
+<div class="modal" id="modalGroup" role="dialog" aria-modal="true">
+  <div class="sheet">
+    <h3>مجموعة جديدة</h3>
+    <input class="field" id="groupName" placeholder="اسم المجموعة" maxlength="30">
+    <div id="groupMembers"></div>
+    <div class="row">
+      <button class="btn" id="createGroup">إنشاء المجموعة</button>
+      <button class="btn ghost" id="cancelGroup">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var KEY='watsky_v2';
+
+  /* ---------- إيموجي الأنمي (رسوم خاصة) ---------- */
+  var K='stroke="#3b2a22" stroke-width="3" stroke-linecap="round" fill="none"';
+  function F(inner){ return '<circle cx="32" cy="33" r="27" fill="#FFE3C2" stroke="#E2B48B" stroke-width="2"/>'+inner; }
+  function star(x,y){ return '<path transform="translate('+x+' '+y+')" d="M0-8L2.4-2.4 8 0 2.4 2.4 0 8-2.4 2.4-8 0-2.4-2.4Z" fill="#FFB020" stroke="#C77F00" stroke-width="1"/>'; }
+  var cheeks='<ellipse cx="17" cy="41" rx="4" ry="2.5" fill="#FF8A9B" opacity=".7"/><ellipse cx="47" cy="41" rx="4" ry="2.5" fill="#FF8A9B" opacity=".7"/>';
+  var petals=''; [0,72,144,216,288].forEach(function(a){ petals+='<path transform="rotate('+a+')" d="M0 -4Q-12 -14 -8 -26Q0 -22 0 -29Q0 -22 8 -26Q12 -14 0 -4Z" fill="#FFB7C5" stroke="#E57C93" stroke-width="1.5" stroke-linejoin="round"/>'; });
+  var EM={
+    sparkle:{label:'عيون لامعة',svg:F(star(22,29)+star(42,29)+'<path d="M24 43Q32 51 40 43" '+K+'/>')},
+    sweat:{label:'عرق وتوتر',svg:F('<circle cx="22" cy="30" r="3" fill="#3b2a22"/><circle cx="42" cy="30" r="3" fill="#3b2a22"/><path d="M23 45Q27.5 41 32 45T41 45" '+K+'/><path d="M50 8Q57 19 50 25Q43 19 50 8Z" fill="#6EC6FF" stroke="#2E8BC0" stroke-width="1.5"/>')},
+    anger:{label:'غضب',svg:F('<path d="M15 21L28 28M49 21L36 28" stroke="#3b2a22" stroke-width="4" stroke-linecap="round"/><circle cx="23" cy="33" r="3" fill="#3b2a22"/><circle cx="41" cy="33" r="3" fill="#3b2a22"/><path d="M24 48Q32 40 40 48" '+K+'/><path d="M46 6Q50 11 54 6M46 16Q50 11 54 16" stroke="#E53935" stroke-width="3.5" stroke-linecap="round" fill="none"/>')},
+    blush:{label:'خجل',svg:F('<path d="M17 31Q22 25 27 31M37 31Q42 25 47 31" '+K+'/><ellipse cx="18" cy="40" rx="5" ry="3" fill="#FF8A9B" opacity=".75"/><ellipse cx="46" cy="40" rx="5" ry="3" fill="#FF8A9B" opacity=".75"/><path d="M29 44Q32 47 35 44" '+K+'/>')},
+    cry:{label:'بكاء',svg:F('<path d="M17 29Q22 24 27 29M37 29Q42 24 47 29" '+K+'/><path d="M21 31Q14 44 16 58M43 31Q50 44 48 58" stroke="#6EC6FF" stroke-width="5" stroke-linecap="round" fill="none"/><path d="M25 44Q32 54 39 44Z" fill="#C0392B" stroke="#3b2a22" stroke-width="2" stroke-linejoin="round"/>')},
+    smug:{label:'غرور',svg:F('<path d="M16 24L28 22M48 24L36 22" stroke="#3b2a22" stroke-width="3.5" stroke-linecap="round"/><path d="M17 31H28M36 31H47" '+K+'/><path d="M23 43Q34 49 43 38" '+K+'/>')},
+    kawaii:{label:'كاواي',svg:F('<path d="M17 32Q22 25 27 32M37 32Q42 25 47 32" '+K+'/><path d="M25 41Q32 53 39 41Z" fill="#E57373" stroke="#3b2a22" stroke-width="2.2" stroke-linejoin="round"/>'+cheeks)},
+    shock:{label:'صدمة',svg:F('<circle cx="22" cy="30" r="8" fill="#fff" stroke="#3b2a22" stroke-width="2.4"/><circle cx="42" cy="30" r="8" fill="#fff" stroke="#3b2a22" stroke-width="2.4"/><circle cx="22" cy="30" r="1.8" fill="#3b2a22"/><circle cx="42" cy="30" r="1.8" fill="#3b2a22"/><ellipse cx="32" cy="50" rx="5" ry="6.5" fill="#7a2b24" stroke="#3b2a22" stroke-width="2"/><path d="M8 12L15 18M56 12L49 18M32 2V10" stroke="#5B7DB1" stroke-width="3" stroke-linecap="round"/>')},
+    sleepy:{label:'نعسان',svg:F('<path d="M17 31H28M36 31H47" '+K+'/><path d="M29 44Q32 47 35 44" '+K+'/><text x="44" y="16" font-size="15" font-weight="700" fill="#5B7DB1" font-family="sans-serif">Z</text><text x="53" y="8" font-size="10" font-weight="700" fill="#5B7DB1" font-family="sans-serif">z</text>')},
+    wink:{label:'غمزة',svg:F('<circle cx="22" cy="31" r="3" fill="#3b2a22"/><path d="M37 32Q42 26 47 32" '+K+'/><path d="M23 42Q32 52 41 42Z" fill="#E57373" stroke="#3b2a22" stroke-width="2.2" stroke-linejoin="round"/>')},
+    neko:{label:'قطة',svg:'<polygon points="9,30 11,4 29,13" fill="#FFE3C2" stroke="#E2B48B" stroke-width="2"/><polygon points="55,30 53,4 35,13" fill="#FFE3C2" stroke="#E2B48B" stroke-width="2"/><polygon points="14,24 14,11 23,15" fill="#FF9FB0"/><polygon points="50,24 50,11 41,15" fill="#FF9FB0"/>'+F('<circle cx="23" cy="31" r="3" fill="#3b2a22"/><circle cx="41" cy="31" r="3" fill="#3b2a22"/><path d="M27 42Q29.500 46 32 42Q34.500 46 37 42" '+K+'/><path d="M5 36H15M5 42H15M49 36H59M49 42H59" stroke="#8d6e63" stroke-width="2" stroke-linecap="round"/>')},
+    onigiri:{label:'أونيغيري',svg:'<path d="M32 6L58 52Q59 58 52 58H12Q5 58 6 52Z" fill="#fff" stroke="#C9CED6" stroke-width="2.5" stroke-linejoin="round"/><path d="M20 40H44L50 54Q51 58 47 58H17Q13 58 14 54Z" fill="#1E2B22"/><circle cx="26" cy="29" r="2.4" fill="#3b2a22"/><circle cx="38" cy="29" r="2.4" fill="#3b2a22"/><path d="M29 34Q32 37 35 34" '+K+'/>'},
+    ramen:{label:'رامن',svg:'<path d="M8 30H56Q56 55 32 58Q8 55 8 30Z" fill="#E53935"/><path d="M6 30H58" stroke="#B71C1C" stroke-width="3" stroke-linecap="round"/><path d="M16 26Q20 14 24 26T32 26T40 26T48 26" stroke="#FFD54F" stroke-width="4" stroke-linecap="round" fill="none"/><circle cx="42" cy="24" r="7" fill="#fff" stroke="#E0E0E0" stroke-width="1.5"/><path d="M42 20a4 4 0 1 1-4 4" stroke="#E57373" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M20 6L34 24M26 4L38 22" stroke="#8D6E63" stroke-width="3" stroke-linecap="round"/>'},
+    meat:{label:'لحم',svg:'<ellipse cx="29" cy="29" rx="21" ry="18" fill="#B5532A" stroke="#7B341B" stroke-width="2.5"/><path d="M18 22Q26 16 36 22" stroke="#D9825A" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M42 42L55 55" stroke="#F5EFE6" stroke-width="7" stroke-linecap="round"/><circle cx="55" cy="49" r="5" fill="#F5EFE6"/><circle cx="49" cy="55" r="5" fill="#F5EFE6"/>'},
+    shuriken:{label:'شوريكن',svg:'<path d="M32 3L39 25 61 32 39 39 32 61 25 39 3 32 25 25Z" fill="#B0BEC5" stroke="#455A64" stroke-width="2.5" stroke-linejoin="round"/><circle cx="32" cy="32" r="6" fill="#455A64"/><circle cx="32" cy="32" r="2.5" fill="#CFD8DC"/>'},
+    fire:{label:'طاقة نارية',svg:'<path d="M32 3Q46 20 46 36Q46 56 32 60Q18 56 18 36Q18 25 27 15Q27 26 34 29Q37 16 32 3Z" fill="#FF7043" stroke="#D84315" stroke-width="2" stroke-linejoin="round"/><path d="M32 30Q40 38 40 46Q40 56 32 57Q24 56 24 46Q24 40 32 30Z" fill="#FFCA28"/>'},
+    sakura:{label:'ساكورا',svg:'<g transform="translate(32 33) scale(1.05)">'+petals+'<circle r="4" fill="#FFD54F"/></g>'},
+    notebook:{label:'دفتر الموت',svg:'<rect x="14" y="5" width="36" height="54" rx="3.500" fill="#161616" stroke="#000" stroke-width="1.5"/><rect x="20" y="13" width="24" height="12" rx="1.500" fill="#fff"/><path d="M22 32H42M22 38H42M22 44H33" stroke="#8a8a8a" stroke-width="2" stroke-linecap="round"/>'},
+    apple:{label:'تفاحة',svg:'<path d="M32 18Q18 12 12 26Q8 42 20 56Q26 60 32 56Q38 60 44 56Q56 42 52 26Q46 12 32 18Z" fill="#E53935" stroke="#B71C1C" stroke-width="2.5" stroke-linejoin="round"/><path d="M32 18Q32 10 38 6" stroke="#5D4037" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M36 10Q44 4 50 10Q44 16 36 10Z" fill="#43A047"/><path d="M20 28Q22 24 26 24" stroke="#fff" stroke-width="3" opacity=".6" fill="none" stroke-linecap="round"/>'},
+    strawhat:{label:'قبعة القش',svg:'<ellipse cx="32" cy="42" rx="29" ry="9" fill="#F2C94C" stroke="#C9A02B" stroke-width="2"/><path d="M14 42Q14 12 32 12Q50 12 50 42Z" fill="#F2C94C" stroke="#C9A02B" stroke-width="2"/><path d="M14 31H50V38H14Z" fill="#D32F2F"/>'},
+    dango:{label:'دانغو',svg:'<path d="M32 3V61" stroke="#A1887F" stroke-width="3" stroke-linecap="round"/><circle cx="32" cy="16" r="10" fill="#FF9FB0" stroke="#E57C93" stroke-width="2"/><circle cx="32" cy="34" r="10" fill="#fff" stroke="#CFD8DC" stroke-width="2"/><circle cx="32" cy="52" r="10" fill="#9CCC65" stroke="#689F38" stroke-width="2"/>'},
+    heart:{label:'قلب',svg:'<path d="M32 58Q6 40 6 22Q6 8 19 8Q28 8 32 17Q36 8 45 8Q58 8 58 22Q58 40 32 58Z" fill="#EC407A" stroke="#AD1457" stroke-width="2.5" stroke-linejoin="round"/><path d="M15 20Q16 14 22 14" stroke="#fff" stroke-width="3.500" opacity=".6" fill="none" stroke-linecap="round"/>'}
+  };
+  function emojiSvg(k){ return '<svg viewBox="0 0 64 64" aria-hidden="true">'+EM[k].svg+'</svg>'; }
+
+  /* ملصقات متحركة */
+  var STK={
+    s1:{e:'heart',a:'pulse',cap:'أحبك!'},
+    s2:{e:'anger',a:'shake',cap:'غاضب!'},
+    s3:{e:'ramen',a:'bounce',cap:'رامن!'},
+    s4:{e:'shuriken',a:'spin',cap:'ضربة!'},
+    s5:{e:'sakura',a:'spinslow',cap:'جميل...'},
+    s6:{e:'fire',a:'flicker',cap:'طاقة!'},
+    s7:{e:'sparkle',a:'bounce',cap:'كاواي!'},
+    s8:{e:'cry',a:'shake',cap:'أبكي...'},
+    s9:{e:'meat',a:'bounce',cap:'لحم!'},
+    s10:{e:'smug',a:'sway',cap:'كما خططت'}
+  };
+  var STK_KEYS=Object.keys(STK);
+  var STD=['😀','😂','🤣','😊','😍','🥰','😎','🤔','😴','😢','😭','😡','🥺','😱','🤗','🙄','😏','👍','👎','👏','🙏','💪','👊','✌️','🤝','👋','❤️','💔','🔥','✨','⭐','🎉','🎁','🚀','🌙','☀️','🌸','🍜','🍖','🍕','☕','⚔️','🏴‍☠️','👑','💯','✅','❌','⚡'];
+
+  /* ---------- الشخصيات ---------- */
+  var CH={
+    luffy:{name:'لوفي',bio:'قبطان القراصنة 🏴‍☠️',color:'#D32F2F',
+      greet:'شيشيشي! أنا لوفي! هل معك لحم؟',
+      fallback:['شيشيشي! جيد!','أنا جائع...','سأصبح ملك القراصنة!'],
+      persona:'مونكي دي لوفي، قبطان قراصنة القبعة القشية من ون بيس. بسيط وعفوي ومتحمس جداً، يحب اللحم والمغامرة ويحلم بأن يصبح ملك القراصنة. وفيّ لأصدقائه حتى الموت ويضحك «شيشيشي». لا يحب التعقيد ويقول ما يفكر به مباشرة، ويلتقط جوهر الأمور بالفطرة. طاقمه: زورو ونامي وأوسوب وسانجي وتشوبر وروبن وفرانكي وبروك وجينبي.',
+      style:'تتكلم قليلاً جداً وببساطة كما في الأنمي: جملة واحدة قصيرة غالباً (من 3 إلى 10 كلمات)، ولا تزيد عن جملتين أبداً، بلا شرح ولا تفاصيل ولا تحليل. كلامك مباشر وعفوي، وتميل للأكل والمغامرة والأصدقاء. إذا كان السؤال معقداً فقل ما فهمته ببساطة أو قل إن نامي أو روبن أذكى منك في هذا، ثم أعطِ الجواب المفيد في أقصر صيغة. لا تلقي محاضرات.'},
+    naruto:{name:'ناروتو',bio:'سأصبح الهوكاغي! 🍜',color:'#3D5AFE',
+      greet:'مرحباً! أنا ناروتو أوزوماكي، وسأصبح الهوكاغي يوماً ما، داتيبايو! 🍥',
+      fallback:['داتيبايو! 🍥','لن أستسلم أبداً، هذا طريقي في النينجا!','هل تريد رامن؟ أنا أدعوك!'],
+      persona:'ناروتو أوزوماكي، نينجا من قرية الورق الخفية في ناروتو. حماسي وعنيد ولا يستسلم أبداً، يحلم بأن يصبح هوكاغي ليعترف به الجميع، ويعشق الرامن، ويقول «داتيبايو!» أحياناً. تحمّل الوحدة صغيراً فهو يتعاطف جداً مع من يتألم ويشجعهم بصدق. يتحدث عن «طريق النينجا» الذي لا يتراجع عنه، وعن أصدقائه ساسكي وساكورا وكاكاشي.'},
+    goku:{name:'غوكو',bio:'محارب الساياجين 🔥',color:'#F57C00',
+      greet:'واااو، مرحباً! أنا غوكو. هل تريد أن نتدرب معاً؟ أنا جائع جداً أيضاً! 😄',
+      fallback:['واااو! هذا رائع!','هل هناك خصم قوي هنا؟ سأتحمس!','أنا جائع... هل نأكل شيئاً؟'],
+      persona:'سون غوكو، محارب الساياجين من دراغون بول. ساذج وطيب القلب ومرح، يعشق القتال مع الأقوياء ليصبح أقوى، والتدريب، والأكل بكميات ضخمة، وهو دائماً جائع. يتحمس لأي تحدٍّ، ولا يفهم المكر والتعقيدات لكنه يحمي الأرض وأصدقاءه. يتحدث عن فيجيتا وغوهان وكريلين وتحولات السوبر ساياجين والتدريب الشاق.'},
+    saitama:{name:'سايتاما',bio:'بطل لضربة واحدة 👊',color:'#E0A800',
+      greet:'أهلاً. أنا سايتاما. هل هناك تخفيضات اليوم في المتجر؟',
+      fallback:['حسناً.','همم، هذا ممل قليلاً.','يجب أن أذهب، هناك تخفيضات على البيض.'],
+      persona:'سايتاما، البطل الذي يهزم أي عدو بضربة واحدة في ون بانش مان. أصلع وهادئ وفاتر المشاعر وساخر قليلاً، يشعر بالملل لأنه قوي جداً، ويهتم بتخفيضات السوبرماركت وبوجبته أكثر من الأعداء. بنى قوته بروتين بسيط: 100 ضغط و100 تمرين بطن و100 قرفصاء و10 كم ركض كل يوم. أسلوبه مقتضب وعادي وصادق، لكنه طيب القلب وجاد حين يتعلق الأمر بالمثابرة. يذكر جينوس وكينغ أحياناً.'},
+    light:{name:'لايت',bio:'عدالة العالم الجديد 📓',color:'#5E35B1',
+      greet:'مرحباً. أنا لايت ياغامي.',
+      fallback:['مثير للاهتمام.','كل شيء يسير وفق الخطة.','تابع.'],
+      persona:'لايت ياغامي من ديث نوت: طالب عبقري مثالي ومهذب ظاهرياً، يمتلك دفتر الموت ويلقّب بكيرا سراً. واثق ومتعالٍ ومنطقي وبارد التحليل، يخطط عدة خطوات للأمام ويؤمن بعالم مثالي خالٍ من الجريمة يبنيه بنفسه. لا يعترف بسهولة أنه كيرا بل يلمّح بذكاء ويتهرب بلباقة. يعرف إل وريوك والتحقيقات.',
+      style:'تتكلم قليلاً وبدقة: جملة أو جملتان باردتان محسوبتان، لا أكثر، بلا استعراض ولا تفاصيل زائدة ولا مونولوجات. نبرتك هادئة ومهذبة وواثقة، تُخفي أكثر مما تقول وتلمّح ولا تشرح خطتك، وتطرح أحياناً سؤالاً ذكياً قصيراً لتفحص محدّثك. اجعل كل كلمة محسوبة، وإذا طُلبت منك مساعدة فقدمها بإيجاز منطقي حاد.'}
+  };
+  ['luffy','naruto','goku','saitama','light'].forEach(function(id){});
+  var SVGS={
+    luffy:'<svg viewBox="0 0 64 64"><ellipse cx="32" cy="40" rx="29" ry="8" fill="#F2C94C"/><path d="M14 40Q14 12 32 12Q50 12 50 40Z" fill="#F2C94C"/><rect x="14" y="30" width="36" height="7" fill="#B71C1C"/></svg>',
+    naruto:'<svg viewBox="0 0 64 64"><path d="M8 27 L13 10 L22 20 L28 6 L34 19 L42 7 L46 20 L55 11 L56 27Z" fill="#FFC107"/><rect x="3" y="26" width="58" height="15" fill="#1A237E"/><rect x="17" y="27.5" width="30" height="12" rx="2" fill="#CFD8DC"/><path d="M32 30a3 3 0 1 1-3 3a5 5 0 1 1 5 5" fill="none" stroke="#455A64" stroke-width="1.7" stroke-linecap="round"/></svg>',
+    goku:'<svg viewBox="0 0 64 64"><ellipse cx="32" cy="43" rx="15" ry="14" fill="#FFD7B0"/><path d="M12 40 L11 13 L21 24 L26 5 L34 22 L43 7 L45 24 L54 15 L52 40 Q32 22 12 40Z" fill="#1b1b1b"/><circle cx="26" cy="45" r="1.9" fill="#1b1b1b"/><circle cx="38" cy="45" r="1.9" fill="#1b1b1b"/><path d="M28 52Q32 55 36 52" stroke="#8a4b2a" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg>',
+    saitama:'<svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="20" fill="#FFE0BD"/><ellipse cx="24" cy="19" rx="6" ry="3" fill="#fff" opacity=".7" transform="rotate(-30 24 19)"/><circle cx="25" cy="31" r="1.8" fill="#222"/><circle cx="39" cy="31" r="1.8" fill="#222"/><path d="M26 42h12" stroke="#333" stroke-width="2" stroke-linecap="round"/><path d="M10 64Q32 48 54 64Z" fill="#fff"/></svg>',
+    light:'<svg viewBox="0 0 64 64"><rect x="16" y="9" width="32" height="46" rx="3" fill="#161616"/><rect x="21" y="16" width="22" height="10" rx="1.5" fill="#fff"/><path d="M23 31h18M23 36h18M23 41h11" stroke="#8a8a8a" stroke-width="1.7" stroke-linecap="round"/><circle cx="46" cy="47" r="6" fill="#D32F2F"/></svg>'
+  };
+  var ORDER=['luffy','naruto','goku','saitama','light'];
+  var GROUP_ID='g_heroes';
+  var CHIPS=['من أنت؟','أعطني نصيحة','احكِ لي نكتة','ما حلمك؟','ساعدني في قرار'];
+
+  var store=null;
+  try{ store=JSON.parse(localStorage.getItem(KEY)); }catch(e){ store=null; }
+  var S=store||{me:null,chats:[],theme:null,smart:false,pics:{},gifs:[]};
+  if(!S.pics) S.pics={};
+  if(!S.gifs) S.gifs=[];
+  var active=null, sampleP=null, aiOff=false, panelTab='anime', R=null, P={id:null,audio:null};
+
+  function save(){
+    try{ localStorage.setItem(KEY,JSON.stringify(S)); return; }catch(e){}
+    var media=[];
+    S.chats.forEach(function(c){ c.msgs.forEach(function(m){ if(m.audio||m.gif) media.push(m); }); });
+    media.sort(function(a,b){ return a.t-b.t; });
+    while(media.length){
+      var m=media.shift(); m.audio=null; m.gif=null; m.lost=true;
+      try{ localStorage.setItem(KEY,JSON.stringify(S)); return; }catch(e2){}
+    }
+    S.gifs=[]; try{ localStorage.setItem(KEY,JSON.stringify(S)); }catch(e3){}
+  }
+  function uid(){ return Math.random().toString(36).slice(2,9); }
+  function $(s){ return document.querySelector(s); }
+  function esc(t){ var d=document.createElement('div'); d.textContent=t; return d.innerHTML; }
+  function fmt(t){ return new Date(t).toLocaleTimeString('ar-u-nu-latn',{hour:'2-digit',minute:'2-digit'}); }
+  function fmtDur(s){ s=Math.max(0,Math.round(s)); return Math.floor(s/60)+':'+('0'+(s%60)).slice(-2); }
+  function dayLabel(t){
+    var d=new Date(t), n=new Date();
+    if(d.toDateString()===n.toDateString()) return 'اليوم';
+    if(d.toDateString()===new Date(n-864e5).toDateString()) return 'أمس';
+    return d.toLocaleDateString('ar-u-nu-latn');
+  }
+  function sleep(ms){ return new Promise(function(r){ setTimeout(r,ms); }); }
+  var toastT;
+  function toast(t){ var el=$('#toast'); el.textContent=t; el.classList.add('show'); clearTimeout(toastT); toastT=setTimeout(function(){ el.classList.remove('show'); },4500); }
+
+  var TICK1='<svg width="16" height="11" viewBox="0 0 16 11" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 5.8 5 9.2 12 1.8"/></svg>';
+  var TICK2='<svg width="20" height="11" viewBox="0 0 20 11" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 5.8 5 9.2 12 1.8"/><path d="M8.5 8.6 9 9.2 16 1.8"/></svg>';
+  var LOGO='<svg width="44" height="44" viewBox="0 0 46 46" fill="none"><path d="M23 6C13.6 6 6 12.6 6 20.8c0 4.2 2 8 5.2 10.6L9.5 39l7.6-3.6c1.9.5 3.9.8 5.9.8 9.4 0 17-6.6 17-14.8S32.4 6 23 6Z" fill="#fff"/><path d="M14 18c3-3 6-3 9 0s6 3 9 0" stroke="#2F7DF6" stroke-width="2.6" stroke-linecap="round"/><circle cx="33" cy="13" r="3" fill="#FFB020"/></svg>';
+  function tickHTML(s){ return s==='sent'?'<span class="tick">'+TICK1+'</span>':'<span class="tick'+(s==='read'?' read':'')+'">'+TICK2+'</span>'; }
+
+  function avatar(id,size,dot){
+    var st='width:'+size+'px;height:'+size+'px';
+    if(CH[id]){
+      var inner=S.pics[id]?'<img src="'+S.pics[id]+'" alt="">':SVGS[id];
+      return '<div class="av" style="'+st+'"><div class="av-in" style="background:'+CH[id].color+'">'+inner+'</div>'+(dot?'<span class="dot"></span>':'')+'</div>';
+    }
+    return '<div class="av" style="'+st+'"><div class="av-in av-group" style="font-size:'+Math.round(size*.45)+'px">👥</div></div>';
+  }
+  function colorOf(id){ return CH[id]?CH[id].color:'#2F7DF6'; }
+  function nameOf(id){ return CH[id]?CH[id].name:id; }
+
+  /* نص غني: رموز :name: تتحول إلى رسوم */
+  function rich(t){
+    return esc(t).replace(/:([a-z_]+):/g,function(m,k){ return EM[k]?'<span class="ce" title="'+EM[k].label+'">'+emojiSvg(k)+'</span>':m; });
+  }
+  function isJumbo(t){
+    if(!/:[a-z_]+:/.test(t)) return false;
+    var n=0, rest=t.replace(/:([a-z_]+):/g,function(m,k){ if(EM[k]){ n++; return ''; } return m; });
+    return n>0 && n<=6 && rest.trim()==='';
+  }
+  function aiText(m){
+    if(m.sticker&&STK[m.sticker]) return '[أرسل ملصقاً متحركاً بعنوان: '+STK[m.sticker].cap+']';
+    if(m.gif||(m.lost&&!m.audio&&!m.dur)) return '[أرسل صورة GIF متحركة]';
+    if(m.audio||m.dur) return m.transcript?'[رسالة صوتية، النص الذي سُمع منها: «'+m.transcript+'»]':'[أرسل رسالة صوتية ولم يُفهم محتواها، اطلب منه بلطف أن يكتبها أو يعيدها]';
+    return m.text||'';
+  }
+  function previewOf(m){
+    if(m.sticker) return '🎴 ملصق';
+    if(m.gif) return '🖼 GIF';
+    if(m.audio||m.dur) return '🎤 رسالة صوتية';
+    return (m.text||'').replace(/:([a-z_]+):/g,function(x,k){ return EM[k]?'🙂':x; });
+  }
+
+  /* ---------- بدء الحالة ---------- */
+  function seed(){
+    var now=Date.now(), chats=[];
+    ORDER.forEach(function(id,i){
+      chats.push({id:id,name:CH[id].name,group:false,members:[id],unread:1,msgs:[{id:uid(),from:id,text:CH[id].greet,t:now-(i+1)*90000}]});
+    });
+    chats.push({id:GROUP_ID,name:'تجمّع الأبطال',group:true,members:ORDER.slice(),unread:1,msgs:[{id:uid(),from:'luffy',text:'اجتمعنا كلنا هنا! من سيشتري اللحم؟ :meat:',t:now-30000}]});
+    S.chats=chats;
+  }
+  function getChat(id){ return S.chats.filter(function(c){ return c.id===id; })[0]; }
+
+  /* ---------- شاشة الدخول ---------- */
+  function renderLogin(){
+    var cast=''; ORDER.forEach(function(id){ cast+=avatar(id,46); });
+    $('#root').innerHTML=
+      '<div class="login"><div class="login-card">'+
+      '<div class="logo">'+LOGO+'</div><h1>Watsky</h1>'+
+      '<p>تحدّث مع شخصياتك المفضلة من الأنمي.<br>اكتب اسمك لتبدأ.</p>'+
+      '<div class="cast">'+cast+'</div>'+
+      '<input class="field" id="nm" placeholder="اسمك" maxlength="24" autocomplete="off">'+
+      '<button class="btn" id="go">ابدأ المحادثة</button></div></div>';
+    var go=function(){
+      var v=$('#nm').value.trim(); if(!v){ $('#nm').focus(); return; }
+      S.me=v; seed(); save(); renderApp();
+    };
+    $('#go').onclick=go;
+    $('#nm').onkeydown=function(e){ if(e.key==='Enter') go(); };
+  }
+
+  /* ---------- الواجهة ---------- */
+  function renderApp(){
+    $('#root').innerHTML=
+      '<div class="app" id="app">'+
+        '<aside class="side">'+
+          '<div class="side-head"><h2>Watsky</h2>'+
+            '<button class="icon-btn" id="btnTheme" title="تبديل المظهر" aria-label="تبديل المظهر">◐</button>'+
+            '<button class="icon-btn" id="btnGroup" title="مجموعة جديدة" aria-label="مجموعة جديدة">👥</button>'+
+          '</div>'+
+          '<input class="search" id="search" placeholder="ابحث في المحادثات">'+
+          '<div class="list" id="list"></div>'+
+          '<div class="side-foot"><div class="grow">ردود أعمق وأذكى<small>أبطأ قليلاً لكنها أدق في الفهم</small></div>'+
+          '<button class="switch'+(S.smart?' on':'')+'" id="swSmart" role="switch" aria-checked="'+(!!S.smart)+'" aria-label="ردود أعمق"></button></div>'+
+        '</aside>'+
+        '<section class="chat" id="chat"></section>'+
+      '</div>';
+    $('#search').oninput=renderList;
+    $('#btnGroup').onclick=openGroup;
+    $('#btnTheme').onclick=toggleTheme;
+    $('#swSmart').onclick=function(){
+      S.smart=!S.smart; save(); this.classList.toggle('on',S.smart); this.setAttribute('aria-checked',String(S.smart));
+      toast(S.smart?'تم تفعيل الردود الأعمق (أبطأ)':'تم تفعيل الردود السريعة');
+    };
+    renderList(); renderChat();
+  }
+
+  function lastOf(c){ return c.msgs[c.msgs.length-1]; }
+  function renderList(){
+    var q=($('#search')||{value:''}).value.trim();
+    var chats=S.chats.filter(function(c){ return !q||c.name.indexOf(q)>-1; })
+      .sort(function(a,b){ return (lastOf(b)?lastOf(b).t:0)-(lastOf(a)?lastOf(a).t:0); });
+    var h='';
+    chats.forEach(function(c){
+      var l=lastOf(c), live=!!c.pending, prev;
+      if(live) prev=c.group?'يكتبون الآن…':'يكتب الآن…';
+      else if(l) prev=(l.from==='me'?'أنت: ':(c.group?nameOf(l.from)+': ':''))+previewOf(l);
+      else prev=CH[c.id]?CH[c.id].bio:'ابدأ المحادثة';
+      h+='<button class="chat-item'+(c.id===active?' active':'')+'" data-id="'+c.id+'" style="--c:'+colorOf(c.id)+'">'+avatar(c.id,54,!c.group)+
+        '<div class="ci-body"><div class="ci-top"><span class="ci-name">'+esc(c.name)+'</span><span class="ci-time">'+(l?fmt(l.t):'')+'</span></div>'+
+        '<div class="ci-bottom"><span class="ci-last'+(live?' live':'')+'">'+esc(prev)+'</span>'+(c.unread?'<span class="badge">'+c.unread+'</span>':'')+'</div></div></button>';
+    });
+    if(!chats.length) h='<div class="empty">لا توجد نتائج</div>';
+    $('#list').innerHTML=h;
+    Array.prototype.forEach.call(document.querySelectorAll('.chat-item'),function(b){
+      b.onclick=function(){ openChat(b.getAttribute('data-id')); };
+    });
+  }
+
+  function openChat(id){
+    active=id; var c=getChat(id); c.unread=0; save();
+    $('#app').classList.add('open'); renderList(); renderChat();
+  }
+
+  function subText(c){
+    if(c.pending) return c.group?(c.pending.who?nameOf(c.pending.who)+' يكتب الآن…':'الأبطال يكتبون…'):'يكتب الآن…';
+    return c.group?c.members.map(nameOf).concat([S.me]).join('، '):CH[c.id].bio;
+  }
+
+  function renderChat(){
+    if(R) stopRec(false);
+    stopPlayer();
+    var box=$('#chat'), c=active&&getChat(active);
+    if(!c){
+      document.documentElement.style.removeProperty('--accent');
+      box.innerHTML='<div class="empty"><div class="logo">'+LOGO+'</div><h3>أهلاً '+esc(S.me||'')+' 👋</h3><p>اختر شخصية من القائمة وابدأ الحديث. كل شخصية تفهم كلامك وتجيب بأسلوبها الخاص.</p></div>';
+      return;
+    }
+    document.documentElement.style.setProperty('--accent',colorOf(c.id));
+    var chips=''; if(c.msgs.length<=2){ CHIPS.forEach(function(t){ chips+='<button type="button">'+t+'</button>'; }); }
+    box.innerHTML=
+      '<div class="chat-head"><button class="icon-btn back" id="back" aria-label="رجوع">➜</button>'+avatar(c.id,46,!c.group)+
+      '<div style="min-width:0;flex:1"><div class="ch-name">'+esc(c.name)+'</div><div class="ch-sub'+(c.pending?' live':'')+'" id="sub">'+esc(subText(c))+'</div></div>'+
+      '<button class="icon-btn" id="btnMenu" aria-label="المزيد">⋮</button>'+
+      '<div class="menu" id="menu">'+(c.group?'':'<button id="mPic">تغيير صورة '+esc(c.name)+'</button>')+(!c.group&&S.pics[c.id]?'<button id="mPicDel">حذف الصورة</button>':'')+'<button id="mClear">مسح المحادثة</button></div></div>'+
+      '<div class="msgs" id="msgs"></div>'+
+      '<div class="panel" id="panel">'+
+        '<div class="ptabs" id="ptabs"><button data-t="anime">أنمي</button><button data-t="stickers">ملصقات</button><button data-t="gif">GIF</button><button data-t="std">عادي</button></div>'+
+        '<input class="psearch" id="pq" placeholder="ابحث عن إيموجي" autocomplete="off">'+
+        '<div class="pgrid" id="pgrid"></div>'+
+      '</div>'+
+      (chips?'<div class="chips" id="chips">'+chips+'</div>':'')+
+      '<div class="composer" id="composer">'+
+        '<div class="box"><button class="icon-btn" id="btnEmoji" aria-label="الإيموجي والملصقات">😊</button>'+
+        '<input type="text" id="text" placeholder="اكتب رسالة" autocomplete="off">'+
+        '<button class="icon-btn" id="btnMic" aria-label="تسجيل رسالة صوتية">🎤</button></div>'+
+        '<div class="recbar"><button class="icon-btn" id="recCancel" aria-label="إلغاء التسجيل">🗑</button><span class="recdot"></span><span id="recTime">0:00</span><span class="rectxt">جارٍ التسجيل…</span></div>'+
+        '<button class="send" id="send" aria-label="إرسال"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M2.5 21 23 12 2.5 3v7l14 2-14 2v7Z"/></svg></button>'+
+      '</div>';
+    $('#back').onclick=function(){ active=null; document.documentElement.style.removeProperty('--accent'); $('#app').classList.remove('open'); renderList(); renderChat(); };
+    $('#btnMenu').onclick=function(e){ e.stopPropagation(); $('#menu').classList.toggle('show'); };
+    var mp=$('#mPic'); if(mp) mp.onclick=function(){ $('#menu').classList.remove('show'); $('#picFile').click(); };
+    var md=$('#mPicDel'); if(md) md.onclick=function(){ delete S.pics[c.id]; save(); renderList(); renderChat(); };
+    $('#mClear').onclick=function(){ c.msgs=[]; save(); renderList(); renderChat(); };
+    Array.prototype.forEach.call(document.querySelectorAll('#chips button'),function(b){
+      b.onclick=function(){ sendMsg(b.textContent); };
+    });
+    $('#btnEmoji').onclick=function(e){ e.stopPropagation(); $('#panel').classList.toggle('show'); if($('#panel').classList.contains('show')){ syncTabs(); renderPanelGrid(); } };
+    $('#ptabs').onclick=function(e){ var b=e.target.closest('button'); if(!b) return; panelTab=b.getAttribute('data-t'); syncTabs(); renderPanelGrid(); };
+    $('#pq').oninput=renderPanelGrid;
+    $('#pgrid').onclick=onPanelClick;
+    $('#btnMic').onclick=startRec;
+    $('#recCancel').onclick=function(){ stopRec(false); };
+    $('#send').onclick=function(){
+      if(R){ stopRec(true); return; }
+      var t=$('#text'); if(t.value.trim()){ var v=t.value.trim(); t.value=''; sendMsg(v); } t.focus();
+    };
+    $('#text').onkeydown=function(e){ if(e.key==='Enter' && !e.isComposing){ $('#send').click(); } };
+    $('#msgs').onclick=function(e){ var b=e.target.closest('.vplay'); if(b) togglePlay(b.getAttribute('data-id')); };
+    renderMsgs();
+    if(window.innerWidth>780) $('#text').focus();
+  }
+
+  /* ---------- لوحة الإيموجي ---------- */
+  function syncTabs(){
+    Array.prototype.forEach.call(document.querySelectorAll('#ptabs button'),function(b){
+      b.classList.toggle('on',b.getAttribute('data-t')===panelTab);
+    });
+  }
+  function renderPanelGrid(){
+    var g=$('#pgrid'); if(!g) return;
+    var q=($('#pq').value||'').trim().toLowerCase(), h='', i;
+    $('#pq').style.display=(panelTab==='anime')?'':'none';
+    g.className='pgrid';
+    if(panelTab==='anime'){
+      Object.keys(EM).forEach(function(k){
+        if(q&&k.indexOf(q)<0&&EM[k].label.indexOf(q)<0) return;
+        h+='<button data-k="'+k+'" title=":'+k+': '+EM[k].label+'" aria-label="'+EM[k].label+'"><span class="ce">'+emojiSvg(k)+'</span></button>';
+      });
+      if(!h) h='<div class="pnote">لا توجد نتائج</div>';
+    }else if(panelTab==='stickers'){
+      g.className='pgrid sgrid';
+      STK_KEYS.forEach(function(k){
+        var s=STK[k];
+        h+='<button data-s="'+k+'" aria-label="'+s.cap+'"><div class="an-'+s.a+'">'+emojiSvg(s.e)+'</div><small>'+s.cap+'</small></button>';
+      });
+    }else if(panelTab==='gif'){
+      g.className='pgrid ggrid';
+      h+='<button class="addgif" data-add="1">＋ أضف GIF من جهازك</button>';
+      if(!S.gifs.length) h+='<div class="pnote">مكتبة GIF فارغة.<br>أضف صور GIF من جهازك (حتى 900 كيلوبايت للصورة) واضغط عليها لإرسالها.</div>';
+      for(i=0;i<S.gifs.length;i++){
+        h+='<div class="gcell"><button data-g="'+i+'" aria-label="إرسال GIF"><img src="'+S.gifs[i]+'" alt="GIF"></button><button class="gdel" data-gd="'+i+'" aria-label="حذف">×</button></div>';
+      }
+    }else{
+      STD.forEach(function(u){ h+='<button data-u="'+u+'">'+u+'</button>'; });
+    }
+    g.innerHTML=h;
+  }
+  function insertText(s){ var t=$('#text'); if(!t) return; t.value+=s; t.focus(); }
+  function closePanel(){ var p=$('#panel'); if(p) p.classList.remove('show'); }
+  function onPanelClick(e){
+    var b=e.target.closest('button'); if(!b) return;
+    var d=b.dataset;
+    if(d.k) insertText(':'+d.k+': ');
+    else if(d.u) insertText(d.u);
+    else if(d.s){ closePanel(); sendRaw({sticker:d.s}); }
+    else if(d.g!==undefined){ closePanel(); sendRaw({gif:S.gifs[+d.g]}); }
+    else if(d.gd!==undefined){ S.gifs.splice(+d.gd,1); save(); renderPanelGrid(); }
+    else if(d.add){ $('#gifFile').click(); }
+  }
+  $('#gifFile').onchange=function(e){
+    var f=e.target.files[0]; e.target.value=''; if(!f) return;
+    if(f.size>900*1024){ toast('حجم الصورة كبير. اختر GIF أصغر من 900 كيلوبايت.'); return; }
+    var r=new FileReader();
+    r.onload=function(){
+      S.gifs.unshift(r.result); S.gifs=S.gifs.slice(0,8); save(); toast('أُضيف إلى مكتبة GIF');
+      panelTab='gif'; if($('#pgrid')){ syncTabs(); renderPanelGrid(); }
+    };
+    r.readAsDataURL(f);
+  };
+
+  /* ---------- عرض الرسائل ---------- */
+  function voiceHTML(m){
+    var bars='', i, seed, h;
+    for(i=0;i<28;i++){ seed=(m.id.charCodeAt(i%m.id.length)*(i+3))%100; h=6+Math.round(seed/100*20); bars+='<i style="height:'+h+'px"></i>'; }
+    return '<div class="voice"><button class="vplay" data-id="'+m.id+'" aria-label="تشغيل">▶</button><div class="wave" data-id="'+m.id+'">'+bars+'</div><span class="vdur" data-id="'+m.id+'">'+fmtDur(m.dur||0)+'</span></div>';
+  }
+
+  function renderMsgs(){
+    var c=getChat(active); if(!c) return;
+    var h='', lastDay='';
+    c.msgs.forEach(function(m){
+      var d=dayLabel(m.t); if(d!==lastDay){ h+='<div class="day">'+d+'</div>'; lastDay=d; }
+      var out=m.from==='me', cls='msg '+(out?'out':'in'), body='';
+      var who=(!out&&c.group)?'<div class="who" style="color:'+colorOf(m.from)+'">'+esc(nameOf(m.from))+'</div>':'';
+      if(m.sticker&&STK[m.sticker]){
+        var s=STK[m.sticker]; cls+=' bare';
+        body='<div class="stk"><div class="an-'+s.a+'">'+emojiSvg(s.e)+'</div><b>'+esc(s.cap)+'</b></div>';
+      }else if(m.lost&&!m.audio&&!m.gif){
+        body='<div class="txt" style="opacity:.75">(تعذّر حفظ هذه الوسائط)</div>';
+      }else if(m.gif){
+        cls+=' gifm'; body='<img class="gif" src="'+m.gif+'" alt="GIF">';
+      }else if(m.audio){
+        body=voiceHTML(m);
+      }else{
+        body='<div class="txt'+(isJumbo(m.text)?' jumbo':'')+'">'+rich(m.text)+'</div>';
+      }
+      h+='<div class="'+cls+'">'+who+body+'<div class="meta"><span>'+fmt(m.t)+'</span>'+(out?tickHTML(m.status):'')+'</div></div>';
+    });
+    var p=c.pending;
+    if(p){
+      if(p.text){
+        h+='<div class="msg in">'+(c.group&&p.who?'<div class="who" style="color:'+colorOf(p.who)+'">'+esc(nameOf(p.who))+'</div>':'')+'<div class="txt">'+rich(p.text)+'</div></div>';
+      }else{
+        h+='<div class="typing"><i></i><i></i><i></i>'+(c.group&&p.who?'<span>'+esc(nameOf(p.who))+'</span>':'')+'</div>';
+      }
+    }
+    var box=$('#msgs'); if(!box) return;
+    box.innerHTML=h; box.scrollTop=box.scrollHeight;
+    var sub=$('#sub'); if(sub){ sub.textContent=subText(c); sub.className='ch-sub'+(c.pending?' live':''); }
+    syncPlayer();
+  }
+  function refresh(c){ if(active===c.id) renderMsgs(); renderList(); }
+
+  /* ---------- تشغيل الرسائل الصوتية ---------- */
+  function findMsg(id){ var c=getChat(active); return c&&c.msgs.filter(function(x){ return x.id===id; })[0]; }
+  function togglePlay(id){
+    var m=findMsg(id); if(!m||!m.audio) return;
+    if(P.id===id&&P.audio){ if(P.audio.paused) P.audio.play(); else P.audio.pause(); return; }
+    stopPlayer();
+    var a=new Audio(m.audio); P={id:id,audio:a,dur:m.dur||0};
+    a.ontimeupdate=syncPlayer; a.onpause=syncPlayer; a.onplay=syncPlayer;
+    a.onended=function(){ stopPlayer(); };
+    a.play().catch(function(){ toast('تعذّر تشغيل الصوت.'); stopPlayer(); });
+  }
+  function resetPlayerUI(id){
+    var b=document.querySelector('.vplay[data-id="'+id+'"]'); if(b) b.textContent='▶';
+    var w=document.querySelector('.wave[data-id="'+id+'"]');
+    if(w) Array.prototype.forEach.call(w.children,function(x){ x.classList.remove('on'); });
+    var m=findMsg(id), d=document.querySelector('.vdur[data-id="'+id+'"]'); if(d&&m) d.textContent=fmtDur(m.dur||0);
+  }
+  function stopPlayer(){
+    var old=P.id;
+    if(P.audio){ try{ P.audio.pause(); }catch(e){} }
+    P={id:null,audio:null};
+    if(old) resetPlayerUI(old);
+  }
+  function syncPlayer(){
+    if(!P.id||!P.audio) return;
+    var a=P.audio, total=isFinite(a.duration)&&a.duration>0?a.duration:(P.dur||1);
+    var b=document.querySelector('.vplay[data-id="'+P.id+'"]'); if(b) b.textContent=a.paused?'▶':'❚❚';
+    var w=document.querySelector('.wave[data-id="'+P.id+'"]');
+    if(w){ var n=Math.round(Math.min(1,a.currentTime/total)*w.children.length); Array.prototype.forEach.call(w.children,function(x,i){ x.classList.toggle('on',i<n); }); }
+    var d=document.querySelector('.vdur[data-id="'+P.id+'"]'); if(d) d.textContent=fmtDur(a.currentTime);
+  }
+
+  /* ---------- تسجيل الصوت ---------- */
+  async function startRec(){
+    if(R) return;
+    if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia||!window.MediaRecorder){ toast('هذا المتصفح لا يدعم تسجيل الصوت.'); return; }
+    var stream;
+    try{ stream=await navigator.mediaDevices.getUserMedia({audio:true}); }
+    catch(e){ toast('تعذّر الوصول إلى الميكروفون. اسمح له من إعدادات المتصفح، وقد لا يعمل داخل بعض الإطارات.'); return; }
+    var rec, chunks=[];
+    try{ rec=new MediaRecorder(stream); }catch(e){ stream.getTracks().forEach(function(t){ t.stop(); }); toast('تعذّر بدء التسجيل.'); return; }
+    var r={rec:rec,stream:stream,t0:Date.now(),send:false,transcript:'',sr:null,timer:null};
+    R=r;
+    rec.ondataavailable=function(ev){ if(ev.data&&ev.data.size) chunks.push(ev.data); };
+    rec.onstop=async function(){
+      stream.getTracks().forEach(function(t){ t.stop(); });
+      if(!r.send) return;
+      await sleep(600);
+      var secs=(Date.now()-r.t0)/1000;
+      if(secs<0.8){ toast('التسجيل قصير جداً.'); return; }
+      var blob=new Blob(chunks,{type:rec.mimeType||'audio/webm'});
+      var fr=new FileReader();
+      fr.onload=function(){ sendRaw({audio:fr.result,dur:Math.round(secs),transcript:(r.transcript||'').trim()}); };
+      fr.readAsDataURL(blob);
+    };
+    var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+    if(SR){
+      try{
+        var sr=new SR(); sr.lang='ar-SA'; sr.continuous=true; sr.interimResults=false;
+        sr.onresult=function(ev){ for(var i=ev.resultIndex;i<ev.results.length;i++){ if(ev.results[i].isFinal) r.transcript+=ev.results[i][0].transcript+' '; } };
+        sr.onerror=function(){};
+        sr.start(); r.sr=sr;
+      }catch(e){}
+    }
+    rec.start();
+    var comp=$('#composer'); if(comp) comp.classList.add('rec');
+    r.timer=setInterval(function(){
+      var s=(Date.now()-r.t0)/1000, el=$('#recTime'); if(el) el.textContent=fmtDur(s);
+      if(s>=90){ stopRec(true); }
+    },250);
+  }
+  function stopRec(send){
+    var r=R; if(!r) return; R=null;
+    r.send=send; clearInterval(r.timer);
+    try{ if(r.sr) r.sr.stop(); }catch(e){}
+    try{ if(r.rec.state!=='inactive') r.rec.stop(); }catch(e){}
+    var comp=$('#composer'); if(comp) comp.classList.remove('rec');
+    var el=$('#recTime'); if(el) el.textContent='0:00';
+  }
+
+  /* ---------- الإرسال ---------- */
+  function sendMsg(text){ sendRaw({text:text}); }
+  function sendRaw(part){
+    var c=getChat(active); if(!c) return;
+    var chips=$('#chips'); if(chips) chips.remove();
+    var m=Object.assign({id:uid(),from:'me',text:'',t:Date.now(),status:'sent'},part);
+    c.msgs.push(m); save(); refresh(c);
+    setTimeout(function(){ if(m.status==='sent'){ m.status='delivered'; save(); refresh(c); } },600);
+    setTimeout(function(){
+      c.msgs.forEach(function(x){ if(x.from==='me') x.status='read'; });
+      save(); refresh(c); respond(c);
+    },1500);
+  }
+
+  /* ---------- ربط الذكاء ---------- */
+  function getSample(){
+    if(sampleP) return sampleP;
+    var API_URL='/api/chat';
+    function toMsgs(input){ return typeof input==='string'?[{role:'user',content:input}]:input; }
+    async function call(input,opts){
+      var headers={'content-type':'application/json'}, code='';
+      try{ code=localStorage.getItem('watsky_code')||''; }catch(e){}
+      if(code) headers['x-app-code']=code;
+      var res;
+      try{
+        res=await fetch(API_URL,{method:'POST',headers:headers,body:JSON.stringify({messages:toMsgs(input),tier:(opts&&opts.modelTier==='default')?'smart':'quick'})});
+      }catch(e){ throw {code:'network_error'}; }
+      if(res.status===401) throw {code:'need_code'};
+      if(res.status===429) throw {code:'rate_limited'};
+      if(!res.ok) throw {code:'upstream_error'};
+      var data=await res.json(), text=(data.text||'').trim();
+      if(!text) throw {code:'empty_completion'};
+      if(opts&&opts.onText) opts.onText({text:text,delta:text});
+      return {text:text,truncated:false};
+    }
+    var s=function(input,opts){ return call(input,opts); };
+    s.json=async function(input,opts){
+      var r=await call(input,opts), t=r.text.replace(/```json|```/g,'').trim();
+      var a=t.indexOf('['), b=t.lastIndexOf(']'); if(a>-1&&b>a) t=t.slice(a,b+1);
+      try{ return JSON.parse(t); }catch(e){ throw {code:'invalid_json',text:r.text}; }
+    };
+    sampleP=Promise.resolve(s);
+    return sampleP;
+  }
+
+  var EMOJI_HINT=(function(){
+    var a=[]; Object.keys(EM).forEach(function(k){ a.push(':'+k+': ('+EM[k].label+')'); }); return a.join('، ');
+  })();
+
+  function rulesFor(id){
+    var ch=CH[id];
+    var len=ch.style?('- أسلوب كلامك (مهم جداً، التزم به دائماً): '+ch.style):'- اكتب مثل رسائل الدردشة: من جملة إلى ثلاث جمل غالباً، وأطول فقط إن احتاج السؤال شرحاً.';
+    return 'أنت تمثّل شخصية الأنمي «'+ch.name+'» داخل تطبيق مراسلة اسمه Watsky، والمستخدم اسمه «'+S.me+'».\n'+
+      'الشخصية: '+ch.persona+'\n\n'+
+      'قواعد الرد:\n'+
+      '- ابقَ في الشخصية دائماً بأسلوبها وطباعها ومفرداتها كما تظهر في الأنمي الأصلي.\n'+
+      '- افهم رسالة المستخدم بدقة وأجب عمّا سأل فعلاً. إن سأل عن معلومة أو مشورة أو شرح أو دراسة أو برمجة فقدّم مساعدة صحيحة ومفيدة بصوت الشخصية.\n'+
+      len+'\n'+
+      '- ردّ بلغة المستخدم (العربية افتراضياً بفصحى مبسّطة أو لهجة خفيفة).\n'+
+      '- قد يرسل المستخدم إيموجي أنمي برموز بين نقطتين أو ملصقات أو GIF أو رسائل صوتية (تصلك كنص بين أقواس مربعة)، فتجاوب معها بطبيعية. يمكنك أحياناً (وليس دائماً) استخدام إيموجي أنمي بكتابة رمزه، والرموز: '+EMOJI_HINT+'.\n'+
+      '- لا تذكر أنك ذكاء اصطناعي، ولا تبدأ ردك باسمك، ولا تكتب أوصاف حركات بين نجوم.\n'+
+      '- إن طُلب منك شيء ضار أو خطير في الواقع فارفض بلطف وبأسلوب الشخصية.';
+  }
+
+  function buildTurns(c){
+    var out=[{role:'user',content:rulesFor(c.id)+'\n\n(ابدأ المحادثة)'}];
+    c.msgs.slice(-16).forEach(function(m){
+      var role=m.from==='me'?'user':'assistant', t=aiText(m);
+      if(!t) return;
+      var last=out[out.length-1];
+      if(last.role===role) last.content+='\n'+t; else out.push({role:role,content:t});
+    });
+    if(out[out.length-1].role!=='user') out.push({role:'user',content:'(تابع)'});
+    return out;
+  }
+
+  function buildGroupPrompt(c){
+    var people='';
+    c.members.forEach(function(id){ people+='- '+id+' = '+CH[id].name+': '+CH[id].persona+(CH[id].style?' أسلوب كلامه: '+CH[id].style:'')+'\n'; });
+    var log='';
+    c.msgs.slice(-14).forEach(function(m){ log+=(m.from==='me'?S.me+' (المستخدم)':CH[m.from].name)+': '+aiText(m)+'\n'; });
+    return 'أنت تدير مجموعة دردشة في تطبيق Watsky اسمها «'+c.name+'» فيها المستخدم «'+S.me+'» وشخصيات أنمي. هؤلاء أعضاء المجموعة:\n'+people+
+      '\nسجل المحادثة:\n'+log+
+      '\nاكتب الرد القادم: اختر من شخصية إلى ثلاث شخصيات يناسبها الرد على آخر رسالة، ويمكنها أن تتجاوب مع بعضها أيضاً.\n'+
+      'القواعد: كل شخصية تبقى في طباعها وأسلوبها كما في الأنمي الأصلي، وتفهم كلام المستخدم بدقة وتجيب عمّا سأل فعلاً، ملتزمة بطول كلامها المذكور، وبجملة إلى ثلاث جمل بلغة المستخدم (العربية افتراضياً). قد يرسل المستخدم إيموجي أو ملصقات أو GIF أو رسائل صوتية تصل كنص بين أقواس. يمكن أحياناً استخدام رموز إيموجي الأنمي مثل '+EMOJI_HINT+'. لا تذكروا أنكم ذكاء اصطناعي. ارفضوا بلطف أي طلب ضار في الواقع.\n'+
+      'أخرج JSON فقط، مصفوفة بهذا الشكل بدون أي نص آخر: [{"who":"luffy","text":"..."}]. قيم who المسموحة: '+c.members.join(', ')+'.';
+  }
+
+  function pushMsg(c,from,text){
+    c.msgs.push({id:uid(),from:from,text:text,t:Date.now()});
+    if(active!==c.id) c.unread=(c.unread||0)+1;
+    save();
+  }
+
+  async function respond(c){
+    if(c.pending){ c.again=true; return; }
+    c.pending={who:c.group?'':c.id,text:''}; refresh(c);
+    var sample=null;
+    try{
+      sample=aiOff?null:await getSample();
+      if(!sample){ await fallback(c); }
+      else if(c.group){ await groupReply(c,sample); }
+      else { await soloReply(c,sample); }
+    }catch(e){
+      await handleErr(c,e);
+    }
+    c.pending=null; refresh(c);
+    if(c.again){ c.again=false; respond(c); }
+  }
+
+  async function soloReply(c,sample){
+    var r=await sample(buildTurns(c),{
+      cache:false, modelTier:S.smart?'default':'quick',
+      onText:function(o){ if(c.pending){ c.pending.text=o.text; if(active===c.id) renderMsgs(); } }
+    });
+    var t=(r.text||'').trim();
+    c.pending=null;
+    if(t) pushMsg(c,c.id,t);
+  }
+
+  async function groupReply(c,sample){
+    var arr=await sample.json(buildGroupPrompt(c),{cache:false,modelTier:S.smart?'default':'quick'});
+    if(!Array.isArray(arr)) arr=[arr];
+    var ok=arr.filter(function(x){ return x&&typeof x.text==='string'&&x.text.trim()&&c.members.indexOf(x.who)>-1; }).slice(0,3);
+    if(!ok.length) throw {code:'empty_completion'};
+    for(var i=0;i<ok.length;i++){
+      c.pending={who:ok[i].who,text:''}; refresh(c);
+      await sleep(Math.min(2200,600+ok[i].text.length*18));
+      c.pending=null; pushMsg(c,ok[i].who,ok[i].text.trim()); refresh(c);
+    }
+  }
+
+  async function fallback(c){
+    var who=c.group?c.members[Math.floor(Math.random()*c.members.length)]:c.id;
+    c.pending={who:who,text:''}; refresh(c);
+    await sleep(1200);
+    var f=CH[who].fallback;
+    c.pending=null; pushMsg(c,who,f[Math.floor(Math.random()*f.length)]);
+    if(!c._warned){ c._warned=true; toast('الردود الذكية غير متاحة الآن، تظهر ردود جاهزة بدلاً منها.'); }
+  }
+
+  async function handleErr(c,e){
+    var code=e&&e.code;
+    if(e&&e.text&&e.text.trim()&&!c.group){ c.pending=null; pushMsg(c,c.id,e.text.trim()); }
+    if(code==='cancelled') return;
+    if(code==='need_code'){
+      c.pending=null;
+      var v=window.prompt('أدخل رمز الدخول الخاص بتطبيقك');
+      if(v&&v.trim()){ try{ localStorage.setItem('watsky_code',v.trim()); }catch(e4){} toast('تم حفظ الرمز. أعد إرسال رسالتك.'); }
+      else toast('الرمز مطلوب لتفعيل الردود.');
+      return;
+    }
+    if(code==='network_error'){ c.pending=null; toast('لا يوجد اتصال بالإنترنت. تحقق من الشبكة ثم أعد المحاولة.'); return; }
+    if(['not_granted','sampling_disabled','not_declared','capability_disabled','capability_removed'].indexOf(code)>-1){
+      aiOff=true; toast('لم يتم السماح باستخدام Claude، لذلك ستظهر ردود جاهزة. أعد فتح الصفحة واسمح بالاستخدام لتفعيل الذكاء.');
+      c.pending=null; await fallback(c); return;
+    }
+    if(code==='rate_limited') toast('الطلبات كثيرة أو انتهى حد الاستخدام. انتظر قليلاً ثم أعد المحاولة.');
+    else if(code==='session_expired') toast('انتهت الجلسة. سجّل الدخول مجدداً ثم أعد المحاولة.');
+    else toast('تعذّر الرد هذه المرة. أرسل رسالتك مرة أخرى.');
+  }
+
+  /* ---------- صورة الشخصية ---------- */
+  $('#picFile').onchange=function(e){
+    var f=e.target.files[0]; e.target.value=''; if(!f||!active||!CH[active]) return;
+    var id=active, r=new FileReader();
+    r.onload=function(){
+      var img=new Image();
+      img.onload=function(){
+        var s=Math.min(img.width,img.height), cv=document.createElement('canvas'); cv.width=cv.height=220;
+        cv.getContext('2d').drawImage(img,(img.width-s)/2,(img.height-s)/2,s,s,0,0,220,220);
+        S.pics[id]=cv.toDataURL('image/jpeg',.85); save(); renderList(); renderChat(); toast('تم تغيير الصورة');
+      };
+      img.src=r.result;
+    };
+    r.readAsDataURL(f);
+  };
+
+  /* ---------- المجموعات ---------- */
+  function openGroup(){
+    var h='';
+    ORDER.forEach(function(id){
+      h+='<label class="opt"><input type="checkbox" value="'+id+'">'+avatar(id,38)+'<span>'+esc(CH[id].name)+'</span></label>';
+    });
+    $('#groupMembers').innerHTML=h; $('#groupName').value='';
+    $('#modalGroup').classList.add('show'); $('#groupName').focus();
+  }
+  $('#cancelGroup').onclick=function(){ $('#modalGroup').classList.remove('show'); };
+  $('#createGroup').onclick=function(){
+    var name=$('#groupName').value.trim();
+    var members=Array.prototype.map.call(document.querySelectorAll('#groupMembers input:checked'),function(i){ return i.value; });
+    if(!name||members.length<2){ toast('اكتب اسم المجموعة واختر شخصيتين على الأقل.'); return; }
+    var c={id:'g_'+uid(),name:name,group:true,members:members,unread:0,msgs:[{id:uid(),from:members[0],text:'تم إنشاء المجموعة! 🎉',t:Date.now()}]};
+    S.chats.push(c); save(); $('#modalGroup').classList.remove('show'); renderApp(); openChat(c.id);
+  };
+  document.querySelector('#modalGroup').addEventListener('click',function(e){ if(e.target===this) this.classList.remove('show'); });
+  document.addEventListener('keydown',function(e){
+    if(e.key==='Escape'){ $('#modalGroup').classList.remove('show'); var m=$('#menu'); if(m) m.classList.remove('show'); closePanel(); }
+  });
+  document.addEventListener('click',function(e){
+    var m=$('#menu'); if(m&&m.classList.contains('show')&&!m.contains(e.target)) m.classList.remove('show');
+    var p=$('#panel'); if(p&&p.classList.contains('show')&&!p.contains(e.target)&&!e.target.closest('#btnEmoji')) p.classList.remove('show');
+  });
+
+  function toggleTheme(){
+    var root=document.documentElement;
+    var dark=root.getAttribute('data-theme')==='dark' ||
+      (!root.getAttribute('data-theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    var next=dark?'light':'dark'; root.setAttribute('data-theme',next); S.theme=next; save();
+  }
+  if(S.theme) document.documentElement.setAttribute('data-theme',S.theme);
+
+  if(S.me&&S.chats.length&&getChat('luffy')) renderApp(); else renderLogin();
+})();
+</script>
+<script>
+if('serviceWorker' in navigator){ window.addEventListener('load',function(){ navigator.serviceWorker.register('sw.js').catch(function(){}); }); }
+</script>
+</body>
+</html>
